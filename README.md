@@ -20,9 +20,16 @@ https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skill.md
 
 Canonical file: [`skill.md`](./skill.md) (raw URL above).
 
+Long playbooks (also fetchable as raw URLs):
+
+- [`scenarios/connect.md`](./scenarios/connect.md)
+- [`scenarios/model-gateway.md`](./scenarios/model-gateway.md)
+- [`scenarios/database.md`](./scenarios/database.md)
+- [`scenarios/storage.md`](./scenarios/storage.md)
+
 ## Point Codex at Vectoree
 
-If you want Codex CLI / ChatGPT desktop to use the Vectoree Model Gateway (playbook **C07** in `skill.md`):
+If you want Codex CLI / ChatGPT desktop to use the Vectoree Model Gateway (playbook **C07** in `scenarios/model-gateway.md`):
 
 ```bash
 bash <(curl -fsSL https://vectoree.ai/scripts/codex-vectoree-setup.sh)
@@ -32,7 +39,7 @@ Windows: `irm https://vectoree.ai/scripts/codex-vectoree-setup.ps1 | iex`
 
 ## Source of truth
 
-Edit `docs/agent-native/vectoree-skill.md` in the platform monorepo, then copy it here as `skill.md`. Do not make the public copy the only copy.
+Edit `docs/agent-native/vectoree-skill.md` and `docs/agent-native/scenarios/` in the platform monorepo, then copy them here. Do not make the public copy the only copy.
 
 ## License
 

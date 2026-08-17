@@ -1,6 +1,6 @@
 ---
 name: vectoree
-version: 0.2.0
+version: 0.3.0
 description: Vectoree Cloud. Login, link a project, manage database/storage, call the Model Gateway, and point Codex at Vectoree via @vectoree/cli. Works with Cursor, Claude Code, Codex, and any agent that can run shell commands.
 homepage: https://github.com/VectoreeAI/vectoree-skills
 cli_package: "@vectoree/cli"
@@ -81,7 +81,7 @@ Prefer `npx @vectoree/cli` so the agent uses a current version.
 
 ## Decision table
 
-Match what the developer said. Run the listed commands. Fetch docs before inventing HTTP shapes (`docs get <docType>`).
+Match what the developer said. Fetch the matching **long playbook** (raw URL in the next section) and follow it. Fetch platform docs before inventing HTTP shapes (`docs get <docType>`).
 
 ### Connect
 
@@ -139,15 +139,15 @@ Drop / full-table delete: stop and confirm.
 
 Work toward connecting **their app**. Do not tour CLI modules.
 
-| ID | Developer says | Chain | Done when |
-|----|----------------|-------|-----------|
-| **C01** | "初始化这个前端项目，连上 Vectoree" | S01 → S04 → write `.env` / `.gitignore` | `current` shows a project; key is not in git |
-| **C02** | "做个能存数据的待办" | C01 → S21 → frontend CRUD via REST (`docs get db-sdk`) | `db query todos` shows sample rows; page can list/add |
-| **C03** | "做个 AI 聊天页" | C01 → S11/S12 → server route to `/api/v1/chat/completions` | `ai chat` works; page can send a message |
-| **C04** | "待办 + 聊天" | C02 + C03 | Table exists, gateway works, both UI pieces work |
-| **C05** | "能上传图片的内容页" | C01 → S21 (`posts`) → S31/S33 | Bucket exists, `storage ls` shows a file, page can pick an image |
-| **C06** | "把现有 OpenAI 调用迁到 Vectoree" | S04 → S15 | `baseURL` is the project gateway; model ids come from `models search` |
-| **C07** | "把我的 Codex 供应商切成 Vectoree" | S04 (need a key) → S16 | Codex `model_provider = "vectoree"`; banner shows the chosen slug |
+| ID | Developer says | Chain | Long playbook |
+|----|----------------|-------|---------------|
+| **C01** | "初始化这个前端项目，连上 Vectoree" | S01 → S04 → write `.env` / `.gitignore` | `scenarios/connect.md` |
+| **C02** | "做个能存数据的待办" | C01 → S21 → frontend CRUD via REST (`docs get db-sdk`) | `scenarios/connect.md` + `database.md` |
+| **C03** | "做个 AI 聊天页" | C01 → S11/S12 → server route to `/api/v1/chat/completions` | `scenarios/connect.md` + `model-gateway.md` |
+| **C04** | "待办 + 聊天" | C02 + C03 | C02 + C03 files |
+| **C05** | "能上传图片的内容页" | C01 → S21 (`posts`) → S31/S33 | `scenarios/connect.md` + `database.md` + `storage.md` |
+| **C06** | "把现有 OpenAI 调用迁到 Vectoree" | S04 → S15 | `scenarios/model-gateway.md` |
+| **C07** | "把我的 Codex 供应商切成 Vectoree" | S04 (need a key) → S16 | `scenarios/model-gateway.md` |
 
 ### Example prompts (paste into the agent)
 
@@ -171,148 +171,25 @@ Do not put the API key in the browser bundle.
 
 ```text
 Point my Codex CLI at Vectoree as the model provider.
-Use the skill playbook C07. I already have (or you can create) a project API key.
+Follow C07 in
+https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/scenarios/model-gateway.md
+I already have (or you can create) a project API key.
 ```
 
 ---
 
-## Playbook details
+## Long playbooks
 
-### C01: Initialize and connect
+These four files are complete for the launch slice. Fetch the raw URL and follow it. Do not skip.
 
-```bash
-npx @vectoree/cli login
-npx @vectoree/cli link
-npx @vectoree/cli whoami
-npx @vectoree/cli current
-```
+| File | IDs | Raw URL |
+|------|-----|---------|
+| `scenarios/connect.md` | S01–S04, C01 | https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/scenarios/connect.md |
+| `scenarios/model-gateway.md` | S10–S16, C03, C06, C07 | https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/scenarios/model-gateway.md |
+| `scenarios/database.md` | S20–S24, C02 | https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/scenarios/database.md |
+| `scenarios/storage.md` | S30–S33, C05 | https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/scenarios/storage.md |
 
-`link` interactively picks or creates a project and writes a scoped key into `.vectoree/`.
-
-Then:
-
-1. Copy the key into `.env` as `VECTOREE_API_KEY` (and `VECTOREE_API_URL=https://vectoree.ai`).
-2. Ensure `.gitignore` contains `.vectoree/` and `.env`.
-3. Do not print the full key back to the user.
-
-### C03: AI chat page
-
-```bash
-npx @vectoree/cli ai models search deepseek
-npx @vectoree/cli ai chat "ping"                          # default: vectoree/free
-npx @vectoree/cli ai chat "ping" --model vectoree/auto    # cost-aware router
-npx @vectoree/cli ai snippet --model vectoree/free --lang ts
-```
-
-Product models:
-
-| Model | Kind | Behavior |
-|-------|------|----------|
-| `vectoree/free` | alias | Free-tier default. Use this for a first ping. |
-| `vectoree/auto` | router | Picks a cheap/available catalog model per request. |
-
-App code uses the OpenAI SDK against the **Vectoree** origin, not a third-party dashboard key:
-
-```ts
-import OpenAI from "openai";
-
-const client = new OpenAI({
-  baseURL: `${process.env.VECTOREE_API_URL}/api/v1`,
-  apiKey: process.env.VECTOREE_API_KEY,
-});
-```
-
-Keep the key on the server (API route or server action). The browser calls your server; your server calls Vectoree.
-
-### S21: Create a table
-
-`id`, `created_at`, and `updated_at` are reserved and auto-added. `--columns` **replaces** the CLI default, so include a primary key plus at least one custom column:
-
-```bash
-npx @vectoree/cli db list
-npx @vectoree/cli db create todos --columns '[
-  {"columnName":"id","type":"uuid","isPrimaryKey":true,"isNullable":false,"isUnique":true,"defaultValue":"gen_random_uuid()"},
-  {"columnName":"title","type":"string","isNullable":false,"isUnique":false},
-  {"columnName":"done","type":"boolean","isNullable":false,"isUnique":false}
-]'
-npx @vectoree/cli db insert todos --data '{"title":"First task","done":false}'
-npx @vectoree/cli db query todos --limit 20
-```
-
-Column types: `string` | `integer` | `float` | `boolean` | `uuid` | `date` | `datetime` | `json`.
-
-App CRUD: `docs get db-sdk`. Launch path is REST `/api/database/records/{table}` with `Authorization: Bearer $VECTOREE_API_KEY`, from a **server** route. Do not ship `@vectoree/sdk` as if it were a launch deliverable.
-
-### S22: Add a column
-
-```bash
-npx @vectoree/cli db schema users
-npx @vectoree/cli db sql "ALTER TABLE users ADD COLUMN avatar text"
-```
-
-Show the SQL first. Use `--yes` only after the user agrees.
-
-### S31 / C05: Bucket + upload
-
-```bash
-npx @vectoree/cli storage buckets list
-npx @vectoree/cli storage buckets create uploads --public
-npx @vectoree/cli storage upload uploads ./photo.png
-npx @vectoree/cli storage ls uploads
-```
-
-Public buckets are world-readable. Private is the default without `--public`. Frontend upload: `docs get storage-sdk`. CLI cannot yet mint signed URLs (`storage url` is P1).
-
-### C06: Migrate existing OpenAI calls
-
-1. `npx @vectoree/cli current` and `ai status`.
-2. Search the repo for `openai`, `baseURL`, `OPENAI_API_KEY`, `api.openai.com`.
-3. `npx @vectoree/cli ai models search <vendor or name>` and pick a real catalog id (or `vectoree/auto`).
-4. `npx @vectoree/cli ai snippet --lang ts` (or `python`) and apply:
-   - `baseURL` → `{VECTOREE_API_URL}/api/v1`
-   - `apiKey` → `VECTOREE_API_KEY`
-   - `model` → the id from search, not a guessed OpenAI-only name
-5. Probe with `ai chat "ping" --model <id>`.
-
-### C07: Point Codex at Vectoree
-
-This switches **Codex CLI** (and ChatGPT desktop, which shares `~/.codex`) to the Vectoree Model Gateway. It is not the same as C01 (app backend). You still need a project API key (`sk-ve-v1-…` or employee `ek-ve-v1-…`). Do not use the instance master key (`ik_`).
-
-**Human, interactive (preferred):**
-
-```bash
-# macOS / Linux
-bash <(curl -fsSL https://vectoree.ai/scripts/codex-vectoree-setup.sh)
-```
-
-```powershell
-# Windows
-irm https://vectoree.ai/scripts/codex-vectoree-setup.ps1 | iex
-```
-
-Menu: `1`–`5` curated slugs, `c` custom slug, `r` restore. Type `y` on first install. Optional env: `VECTOREE_API_KEY`, `VECTOREE_BASE_URL` (default `https://vectoree.ai/api/v1/`), `CODEX_HOME`.
-
-**Agent, non-interactive:** do not replace the whole file (MCP servers and other keys must stay). Backup `~/.codex/config.toml` first, then set:
-
-```toml
-model = "~deepseek/deepseek-v4-flash-latest"
-model_provider = "vectoree"
-model_reasoning_effort = "high"
-
-[model_providers.vectoree]
-name = "Vectoree"
-base_url = "https://vectoree.ai/api/v1/"
-wire_api = "responses"
-experimental_bearer_token = "sk-ve-v1-..."
-```
-
-`wire_api = "responses"` matches `POST /api/v1/responses`. Put the token from `.vectoree/config.json` or the user; never echo it.
-
-Verify: Codex CLI startup banner shows `model: <slug>`. ChatGPT desktop model picker shows **Custom** (expected in API-provider mode; account history UI can look empty; local `~/.codex/sessions` are not deleted).
-
-Restore: re-run the script, choose `r`, fully quit and reopen Codex / ChatGPT.
-
-If Codex returns `BILLING_PRICE_NOT_CONFIGURED`, the slug is wrong or unpriced. `ai models search` / Dashboard Admin → Models. `*-latest` aliases often need the `~` prefix.
+C04 is C02 + C03 (fetch database.md and model-gateway.md). C05 also needs connect.md (and database.md if the page stores posts).
 
 ---
 
