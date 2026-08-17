@@ -14,7 +14,7 @@ last_updated: 2026-08-17
 
 **Install:** `npx skills add VectoreeAI/vectoree-skills`
 
-**Canonical files:** [`skills/vectoree/SKILL.md`](https://github.com/VectoreeAI/vectoree-skills/blob/main/skills/vectoree/SKILL.md) (what `npx skills add` copies). Raw fallback: `https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skill.md`
+**Canonical files:** [`skills/vectoree/SKILL.md`](https://github.com/VectoreeAI/vectoree-skills/blob/main/skills/vectoree/SKILL.md) (what `npx skills add` copies). Raw fallback: `https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skills/vectoree/SKILL.md`
 
 This skill is for **developers and their coding agents** wiring Vectoree Cloud into an app (or into Codex). It is not Skills Hub, not a runtime tool catalog, and not a product the end user clicks.
 

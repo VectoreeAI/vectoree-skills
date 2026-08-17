@@ -45,8 +45,9 @@ skills/vectoree/scenarios/
   model-gateway.md
   database.md
   storage.md
-skill.md                          ← copy of SKILL.md (old raw URL still works)
 ```
+
+Keep `SKILL.md` only under `skills/vectoree/`. A root `skill.md` breaks install on macOS (case-insensitive: `skill.md` ≡ `SKILL.md`, so the CLI copies the whole repo).
 
 ## Point Codex at Vectoree
 
