@@ -1,6 +1,6 @@
 # Connect Vectoree
 
-Use this playbook for **S01–S04** and **C01**. Parent skill: `https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skill.md`
+Use this playbook for **S01–S04** and **C01**. Parent skill: `SKILL.md` in this folder (or https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skills/vectoree/SKILL.md)
 
 Goal: this directory is linked to a Vectoree Cloud project, a scoped API key exists, and the key is not in git.
 

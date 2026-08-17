@@ -1,6 +1,6 @@
 # Model Gateway
 
-Use this playbook for **S10–S16**, **C03**, **C06**, and **C07**. Parent skill: `https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skill.md`
+Use this playbook for **S10–S16**, **C03**, **C06**, and **C07**. Parent skill: `SKILL.md` in this folder (or https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skills/vectoree/SKILL.md)
 
 Need a project API key first (`scenarios/connect.md`). App inference uses OpenAI-compatible HTTP. Agent ops use the CLI. Do not mix them.
 

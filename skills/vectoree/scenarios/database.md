@@ -1,6 +1,6 @@
 # Database
 
-Use this playbook for **S20–S24** and **C02**. Parent skill: `https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skill.md`
+Use this playbook for **S20–S24** and **C02**. Parent skill: `SKILL.md` in this folder (or https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skills/vectoree/SKILL.md)
 
 Need a project API key first (`scenarios/connect.md`). Always `db list` / `db schema` before writes. Drop / full-table delete: stop and confirm.
 

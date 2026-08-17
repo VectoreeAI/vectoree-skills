@@ -1,35 +1,56 @@
 # Vectoree Skills
 
-Agent skill for [Vectoree Cloud](https://vectoree.ai). Developers paste one raw URL into Cursor, Claude Code, Codex, or any coding assistant. The agent then runs [`@vectoree/cli`](https://www.npmjs.com/package/@vectoree/cli) to connect a project, call the Model Gateway, and manage database / storage.
+Agent skill for [Vectoree Cloud](https://vectoree.ai). Install it into Cursor, Claude Code, Codex, and other agents, then run [`@vectoree/cli`](https://www.npmjs.com/package/@vectoree/cli).
 
 This is **not** Skills Hub (runtime tools inside an AI app). Hub is a different product.
 
-## Use it
+## Install
 
-Paste this into your coding agent:
+```bash
+npx skills add VectoreeAI/vectoree-skills
+```
+
+That is the [Agent Skills](https://skills.sh) CLI. It finds `skills/vectoree/SKILL.md` and copies it into the agent skill directories.
+
+Then:
+
+```bash
+npx @vectoree/cli login
+npx @vectoree/cli link
+npx @vectoree/cli ai status
+```
+
+Global install: `npx skills add VectoreeAI/vectoree-skills -g`.
+
+## Fallback (no skills CLI)
+
+Paste into the agent:
 
 ```text
 Set up Vectoree as the backend for this project.
 Follow the skill at:
-https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skill.md
+https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skills/vectoree/SKILL.md
 
 1. npx @vectoree/cli login
 2. npx @vectoree/cli link
 3. npx @vectoree/cli ai status
 ```
 
-Canonical file: [`skill.md`](./skill.md) (raw URL above).
+## Layout
 
-Long playbooks (also fetchable as raw URLs):
-
-- [`scenarios/connect.md`](./scenarios/connect.md)
-- [`scenarios/model-gateway.md`](./scenarios/model-gateway.md)
-- [`scenarios/database.md`](./scenarios/database.md)
-- [`scenarios/storage.md`](./scenarios/storage.md)
+```text
+skills/vectoree/SKILL.md          ← what `npx skills add` installs
+skills/vectoree/scenarios/
+  connect.md
+  model-gateway.md
+  database.md
+  storage.md
+skill.md                          ← copy of SKILL.md (old raw URL still works)
+```
 
 ## Point Codex at Vectoree
 
-If you want Codex CLI / ChatGPT desktop to use the Vectoree Model Gateway (playbook **C07** in `scenarios/model-gateway.md`):
+Playbook **C07** in `skills/vectoree/scenarios/model-gateway.md`:
 
 ```bash
 bash <(curl -fsSL https://vectoree.ai/scripts/codex-vectoree-setup.sh)

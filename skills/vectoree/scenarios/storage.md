@@ -1,6 +1,6 @@
 # Storage
 
-Use this playbook for **S30–S33** and **C05**. Parent skill: `https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skill.md`
+Use this playbook for **S30–S33** and **C05**. Parent skill: `SKILL.md` in this folder (or https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skills/vectoree/SKILL.md)
 
 Need a project API key first (`scenarios/connect.md`). List buckets before creating. Say public vs private out loud.
 
