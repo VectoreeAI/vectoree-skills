@@ -1,7 +1,7 @@
 ---
 name: vectoree
-version: 0.5.0
-description: Use when connecting an app to Vectoree Cloud, listing or calling models through the Vectoree gateway, adding or switching web search to Vectoree Tool Hub MCP, managing project database or storage via @vectoree/cli, migrating OpenAI SDK calls, or pointing Codex at Vectoree. Install with npx skills add VectoreeAI/vectoree-skills.
+version: 0.6.0
+description: Use when connecting an app to Vectoree Cloud, listing or calling models through the Vectoree gateway (chat, TTS, STT, image, video, embeddings), adding or switching web search to Vectoree Tool Hub MCP, managing project database or storage via @vectoree/cli, migrating OpenAI SDK calls, or pointing Codex at Vectoree. Install with npx skills add VectoreeAI/vectoree-skills.
 homepage: https://github.com/VectoreeAI/vectoree-skills
 cli_package: "@vectoree/cli"
 api_base_hint: Default API origin is https://vectoree.ai (override with VECTOREE_API_URL if needed)
@@ -23,7 +23,7 @@ Three surfaces. Do not mix them:
 | Surface | What | Who |
 |---------|------|-----|
 | **CLI** | `npx @vectoree/cli …` | Agent ops: login, link, db, storage, probe models and tools |
-| **OpenAI-compatible HTTP** | `POST /api/v1/chat/completions` | App runtime inference |
+| **OpenAI-compatible HTTP** | `POST /api/v1/chat/completions` (text). TTS/STT/image/video/embeddings use other `/api/v1/*` paths — see S11b. | App runtime inference |
 | **Hosted MCP** | `POST /mcp` (`search`, `extract`) | Agent web search / page extract |
 
 ```text
@@ -115,8 +115,9 @@ Match what the developer said. Fetch the matching **long playbook** (raw URL in 
 
 | ID | Developer says | Do this |
 |----|----------------|---------|
-| **S10** | "有哪些模型" / TTS / STT / 视频 | `ai models list` / `search` / `get`. Filter with `--input-modality` and `--output-modality` (e.g. `speech`, `transcription`, `video`). |
-| **S11** | "用 DeepSeek / Claude / 某个模型" | `ai models search` → `ai chat` → `ai snippet` → paste into app code |
+| **S10** | "有哪些模型" / TTS / STT / 视频 / 生图 / embedding | `ai models list` / `search` / `get` with `--input-modality` / `--output-modality`. Then probe the **matching** command (do not `ai chat` a TTS slug). |
+| **S11** | "用 DeepSeek / Claude / 某个文本模型" | `ai models search` → `ai chat` → `ai snippet` → paste into app code |
+| **S11b** | "用 TTS / STT / 生图 / 视频 / embedding" | Filter catalog → `ai speech` / `transcribe` / `image` / `video` / `embed` → `ai snippet --model <id>`. Runtime paths: `/audio/speech`, `/audio/transcriptions`, `/images`, `/videos`, `/embeddings`. |
 | **S12** | "先免费打一下" | `ai chat "ping"` (default `vectoree/free`) |
 | **S13** | "帮我选便宜能用的" | `ai chat --model vectoree/auto`. Do not hardcode a vendor. |
 | **S14** | "网关通不通 / 花了多少" | `ai status`. Usage lives in Dashboard → Organization → Billing until `ai usage` exists. |
@@ -281,8 +282,13 @@ npx @vectoree/cli ai models list [--input-modality <m>] [--output-modality <m>]
 npx @vectoree/cli ai models search <query> [--input-modality <m>] [--output-modality <m>]
 npx @vectoree/cli ai models get <model>
 npx @vectoree/cli ai status
-npx @vectoree/cli ai chat "<prompt>" [--model <id>]   # default: vectoree/free
-npx @vectoree/cli ai snippet [--model <id>] [--lang ts|python]
+npx @vectoree/cli ai chat "<prompt>" [--model <id>]   # text chat only; default vectoree/free
+npx @vectoree/cli ai speech "<text>" --model <tts-id> [--voice <id>] [--out speech.mp3]
+npx @vectoree/cli ai transcribe --model <stt-id> [--file clip.wav]
+npx @vectoree/cli ai image "<prompt>" --model <image-id>
+npx @vectoree/cli ai video "<prompt>" --model <video-id>
+npx @vectoree/cli ai embed "<text>" --model <embedding-id>
+npx @vectoree/cli ai snippet [--model <id>] [--lang ts|python]   # snippet matches the model's modality
 
 # modality examples (comma-separated values allowed)
 npx @vectoree/cli ai models list --output-modality speech          # TTS
@@ -290,6 +296,8 @@ npx @vectoree/cli ai models list --input-modality audio --output-modality transc
 npx @vectoree/cli ai models list --output-modality video
 npx @vectoree/cli ai models search veo --output-modality video
 ```
+
+Need `@vectoree/cli` ≥ 0.1.9 for `ai speech` / `transcribe` / `image` / `video` / `embed` and `tools` (prefer `npx`). `ai chat` on a TTS slug is refused on purpose.
 
 ### Tool Hub
 
@@ -302,7 +310,7 @@ npx @vectoree/cli tools search "<query>"
 npx @vectoree/cli tools extract <url>
 ```
 
-`link` keys include `tools:*`. Older keys: relink. CLI needs `@vectoree/cli` ≥ 0.1.8 for `tools` (prefer `npx`).
+`link` keys include `tools:*`. Older keys: relink.
 
 Global flags: `--json`, `--yes`, `--api-url <url>`.
 
@@ -340,7 +348,8 @@ If asked, one honest sentence + point at the Dashboard when it still helps. Do n
 | No API key | Not linked | `npx @vectoree/cli link` or set `VECTOREE_API_KEY` |
 | Connection refused | Wrong `VECTOREE_API_URL` | Origin only: `https://vectoree.ai` (or `https://vectoree.net` for staging) |
 | 401 / 403 | Invalid key or missing scope | Relink. CLI keys need `gateway:*`, `tools:*`, `database:*`, `storage:*` |
-| `tools` command missing | Old CLI | `npx @vectoree/cli tools status` (need ≥ 0.1.8). Do not use a stale global install. |
+| `tools` / `ai speech` command missing | Old CLI | `npx @vectoree/cli@0.1.9 --help` (need ≥ 0.1.9). Do not use a stale global install. |
+| TTS `GATEWAY_NO_AVAILABLE_CHANNEL` on `ai chat` | Used chat for a speech model | `ai speech "hello" --model <id>`. Runtime is `POST /api/v1/audio/speech`. |
 | Wallet / billing errors on `ai chat` or `tools search` | Org wallet empty | Organization → Billing |
 | `db create` rejects columns | Used reserved `id` / `created_at` / `updated_at` as the only fields | Add at least one custom column |
 | Codex `BILLING_PRICE_NOT_CONFIGURED` | Bad or unpriced model slug | `ai models search`; try the `~…-latest` form |

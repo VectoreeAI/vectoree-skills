@@ -41,6 +41,20 @@ npx @vectoree/cli ai models search veo --output-modality video
 
 Modality values mirror OpenRouter: `text`, `image`, `audio`, `speech`, `transcription`, `video`, `embeddings`, `rerank`, `file`. Pass `--json` when you need to parse. Comma-separate for AND filters (e.g. `--input-modality text,image`).
 
+**Do not probe TTS/STT/video with `ai chat`.** That hits `/chat/completions` and fails with `GATEWAY_NO_AVAILABLE_CHANNEL`. Use the matching command (CLI ≥ 0.1.9):
+
+```bash
+npx @vectoree/cli ai speech "hello" --model qwen/qwen-audio-3.0-tts-flash
+# omit --voice unless the developer named one; do not default to OpenAI "alloy"
+npx @vectoree/cli ai transcribe --model <stt-id> --file clip.wav
+npx @vectoree/cli ai image "a red apple" --model <image-id>
+npx @vectoree/cli ai video "a cat walking" --model <video-id>
+npx @vectoree/cli ai embed "hello" --model <embedding-id>
+npx @vectoree/cli ai snippet --model <id>
+```
+
+Runtime paths: `POST /api/v1/audio/speech`, `/audio/transcriptions`, `/images`, `/videos` (async job, then poll), `/embeddings`.
+
 ---
 
 ## S12: ping for free
