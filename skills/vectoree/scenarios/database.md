@@ -34,6 +34,8 @@ Column types: `string` | `integer` | `float` | `boolean` | `uuid` | `date` | `da
 
 For notes / orders, same pattern: one custom title/name column plus whatever fields the user asked for.
 
+If they asked for **login / accounts**, that is **C09** (`scenarios/auth.md`). Do not `CREATE TABLE users`. Identity is Vectoree `auth.users`; business tables use `user_id` = JWT `sub`.
+
 App CRUD: `npx @vectoree/cli docs get db-sdk`. Launch path is REST `/api/database/records/{table}` with `Authorization: Bearer $VECTOREE_API_KEY`, from a **server** route. Do not ship `@vectoree/sdk` as if it were a launch deliverable. Do not put the project key in a browser bundle.
 
 C02 done when `db query todos` shows sample rows and the page can list/add.
