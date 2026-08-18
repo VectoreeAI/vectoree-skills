@@ -2,7 +2,7 @@
 
 Agent skill for [Vectoree Cloud](https://vectoree.ai). Install it into Cursor, Claude Code, Codex, and other agents, then run [`@vectoree/cli`](https://www.npmjs.com/package/@vectoree/cli).
 
-This is **not** Skills Hub (runtime tools inside an AI app). Hub is a different product.
+This skill wires **platform ops** (CLI) and **Tool Hub MCP** (`search` / `extract`). It is not ClawHub.
 
 ## Install
 
@@ -18,6 +18,12 @@ Then:
 npx @vectoree/cli login
 npx @vectoree/cli link
 npx @vectoree/cli ai status
+```
+
+Add or switch web search:
+
+```bash
+npx @vectoree/cli tools snippet --write --replace-search
 ```
 
 Global install: `npx skills add VectoreeAI/vectoree-skills -g`.
@@ -36,6 +42,13 @@ https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skills/vectore
 3. npx @vectoree/cli ai status
 ```
 
+Search:
+
+```text
+Add web search via Vectoree Tool Hub (or switch Tavily/Brave to Vectoree).
+Follow C08: https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skills/vectoree/scenarios/tool-hub.md
+```
+
 ## Layout
 
 ```text
@@ -43,6 +56,7 @@ skills/vectoree/SKILL.md          ← what `npx skills add` installs
 skills/vectoree/scenarios/
   connect.md
   model-gateway.md
+  tool-hub.md
   database.md
   storage.md
 ```
@@ -59,9 +73,17 @@ bash <(curl -fsSL https://vectoree.ai/scripts/codex-vectoree-setup.sh)
 
 Windows: `irm https://vectoree.ai/scripts/codex-vectoree-setup.ps1 | iex`
 
+## Add search (Tool Hub MCP)
+
+Playbook **C08** in `skills/vectoree/scenarios/tool-hub.md`:
+
+```bash
+npx @vectoree/cli tools snippet --write --replace-search
+```
+
 ## Source of truth
 
-Edit `docs/agent-native/vectoree-skill.md` and `docs/agent-native/scenarios/` in the platform monorepo, then copy them here. Do not make the public copy the only copy.
+This repository. Edit `skills/vectoree/SKILL.md` and `skills/vectoree/scenarios/` here.
 
 ## License
 

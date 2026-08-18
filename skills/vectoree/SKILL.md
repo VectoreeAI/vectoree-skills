@@ -1,7 +1,7 @@
 ---
 name: vectoree
-version: 0.4.1
-description: Use when connecting an app to Vectoree Cloud, listing or calling models through the Vectoree gateway, managing project database or storage via @vectoree/cli, migrating OpenAI SDK calls, or pointing Codex at Vectoree. Install with npx skills add VectoreeAI/vectoree-skills.
+version: 0.5.0
+description: Use when connecting an app to Vectoree Cloud, listing or calling models through the Vectoree gateway, adding or switching web search to Vectoree Tool Hub MCP, managing project database or storage via @vectoree/cli, migrating OpenAI SDK calls, or pointing Codex at Vectoree. Install with npx skills add VectoreeAI/vectoree-skills.
 homepage: https://github.com/VectoreeAI/vectoree-skills
 cli_package: "@vectoree/cli"
 api_base_hint: Default API origin is https://vectoree.ai (override with VECTOREE_API_URL if needed)
@@ -16,17 +16,18 @@ last_updated: 2026-08-18
 
 **Canonical files:** [`skills/vectoree/SKILL.md`](https://github.com/VectoreeAI/vectoree-skills/blob/main/skills/vectoree/SKILL.md) (what `npx skills add` copies). Raw fallback: `https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skills/vectoree/SKILL.md`
 
-This skill is for **developers and their coding agents** wiring Vectoree Cloud into an app (or into Codex). It is not Skills Hub, not a runtime tool catalog, and not a product the end user clicks.
+This skill is for **developers and their coding agents** wiring Vectoree Cloud into an app, into Codex, or into the agent's MCP search. It is not ClawHub / Skills Hub, and not a catalog the end user clicks in the dashboard.
 
-Two surfaces. Do not mix them:
+Three surfaces. Do not mix them:
 
 | Surface | What | Who |
 |---------|------|-----|
-| **CLI** | `npx @vectoree/cli …` | Agent ops: login, link, db, storage, probe models |
+| **CLI** | `npx @vectoree/cli …` | Agent ops: login, link, db, storage, probe models and tools |
 | **OpenAI-compatible HTTP** | `POST /api/v1/chat/completions` | App runtime inference |
+| **Hosted MCP** | `POST /mcp` (`search`, `extract`) | Agent web search / page extract |
 
 ```text
-Developer → coding agent → this skill → @vectoree/cli + app code → Vectoree Cloud
+Developer → coding agent → this skill → @vectoree/cli + MCP / app code → Vectoree Cloud
 ```
 
 ---
@@ -122,6 +123,14 @@ Match what the developer said. Fetch the matching **long playbook** (raw URL in 
 | **S15** | "把这段改成走 Vectoree 网关" | `ai snippet --lang ts\|python`, then rewrite existing OpenAI SDK calls (`baseURL` + project key). |
 | **S16** | "把我的 Codex 供应商切成 Vectoree" | See **C07**. One-click script, or surgically edit `~/.codex/config.toml`. |
 
+### Tool Hub (search)
+
+| ID | Developer says | Do this |
+|----|----------------|---------|
+| **S17** | "帮我加一下搜索的能力" / "搜索的能力切换到 vectoree" / replace Tavily or Brave | See **C08**. `tools snippet --write` (add `--replace-search` when switching). |
+| **S18** | "搜索通不通 / 先打一下" | `tools search "<query>"`. Optional `tools extract <url>`. These bill the wallet. |
+| **S19** | "MCP 地址 / 有哪些工具" | `tools status`. Tools are `search` and `extract` only. |
+
 ### Database
 
 | ID | Developer says | Do this |
@@ -166,6 +175,7 @@ Work toward connecting **their app**. Do not tour CLI modules.
 | **C05** | "能上传图片的内容页" | C01 → S21 (`posts`) → S31/S33 | `scenarios/connect.md` + `database.md` + `storage.md` |
 | **C06** | "把现有 OpenAI 调用迁到 Vectoree" | S04 → S15 | `scenarios/model-gateway.md` |
 | **C07** | "把我的 Codex 供应商切成 Vectoree" | S04 (need a key) → S16 | `scenarios/model-gateway.md` |
+| **C08** | "帮我加一下搜索" / "搜索切到 vectoree" | S04 (need `tools:*`) → S17 | `scenarios/tool-hub.md` |
 
 ### Example prompts (paste into the agent)
 
@@ -193,16 +203,25 @@ Follow C07 in the Vectoree skill (scenarios/model-gateway.md).
 I already have (or you can create) a project API key.
 ```
 
+**C08**
+
+```text
+Add web search via Vectoree Tool Hub (or switch my existing Tavily/Brave search MCP to Vectoree).
+Follow C08 in the Vectoree skill (scenarios/tool-hub.md).
+Use npx @vectoree/cli tools snippet --write --replace-search.
+```
+
 ---
 
 ## Long playbooks
 
-These four files ship **next to this SKILL.md** (`scenarios/`). If they exist on disk, read them. Otherwise fetch the raw URL.
+These five files ship **next to this SKILL.md** (`scenarios/`). If they exist on disk, read them. Otherwise fetch the raw URL.
 
 | File | IDs | Raw URL |
 |------|-----|---------|
 | `scenarios/connect.md` | S01–S04, C01 | https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skills/vectoree/scenarios/connect.md |
 | `scenarios/model-gateway.md` | S10–S16, C03, C06, C07 | https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skills/vectoree/scenarios/model-gateway.md |
+| `scenarios/tool-hub.md` | S17–S19, C08 | https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skills/vectoree/scenarios/tool-hub.md |
 | `scenarios/database.md` | S20–S24, C02 | https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skills/vectoree/scenarios/database.md |
 | `scenarios/storage.md` | S30–S33, C05 | https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skills/vectoree/scenarios/storage.md |
 
@@ -272,9 +291,22 @@ npx @vectoree/cli ai models list --output-modality video
 npx @vectoree/cli ai models search veo --output-modality video
 ```
 
+### Tool Hub
+
+```bash
+npx @vectoree/cli tools status
+npx @vectoree/cli tools snippet
+npx @vectoree/cli tools snippet --write --replace-search
+npx @vectoree/cli tools snippet --write --client claude --replace-search
+npx @vectoree/cli tools search "<query>"
+npx @vectoree/cli tools extract <url>
+```
+
+`link` keys include `tools:*`. Older keys: relink. CLI needs `@vectoree/cli` ≥ 0.1.8 for `tools` (prefer `npx`).
+
 Global flags: `--json`, `--yes`, `--api-url <url>`.
 
-Safe-first order: `current` / `ai status` → `db list` / `storage buckets list` → writes. Confirm destructive SQL.
+Safe-first order: `current` / `ai status` / `tools status` → `db list` / `storage buckets list` → writes. Confirm destructive SQL.
 
 ---
 
@@ -291,17 +323,12 @@ If asked, one honest sentence + point at the Dashboard when it still helps. Do n
 | Storage download / signed URL | CLI has list/create/ls/upload only. |
 | App templates / "金融模板" | No template catalog. |
 | Deploy / live URL / custom domain | Not a self-serve PaaS this launch. |
-| `@vectoree/sdk` as the app runtime | Later. Agent path is CLI + gateway HTTP + REST. |
-| MCP | Not this launch. |
+| `@vectoree/sdk` as the app runtime | Later. Agent path is CLI + gateway HTTP + REST + MCP. |
+| RAG / vector store as a product | Search MCP is not RAG. Do not invent `skills install` or a tool marketplace beyond `search` / `extract`. |
 | Functions / Realtime / Compute | Hidden. |
+| `vectoree skills install …` | Does not exist. Tool Hub is hosted MCP, not ClawHub. |
 
-**This is not Skills Hub.** Do not treat these as vectoree-skills scenes:
-
-- "给这个 AI 应用装上搜索 / RAG"
-- "从能力中心挑一个工具接到我的 Agent 产品里"
-- any `vectoree skills install …`
-
-Hub is a different product (runtime tools inside the developer's AI app). If asked: that line does not exist yet.
+**This is not ClawHub.** "帮我加搜索 / 把搜索切到 vectoree" is **C08** (`tools snippet --write`). Do not install random skill packs or invent extra tool names.
 
 ---
 
@@ -312,8 +339,9 @@ Hub is a different product (runtime tools inside the developer's AI app). If ask
 | Not logged in | No session | `npx @vectoree/cli login` |
 | No API key | Not linked | `npx @vectoree/cli link` or set `VECTOREE_API_KEY` |
 | Connection refused | Wrong `VECTOREE_API_URL` | Origin only: `https://vectoree.ai` (or `https://vectoree.net` for staging) |
-| 401 / 403 | Invalid key or missing scope | Relink. CLI keys need `gateway:*`, `database:*`, `storage:*` |
-| Wallet / billing errors on `ai chat` | Org wallet empty | Organization → Billing |
+| 401 / 403 | Invalid key or missing scope | Relink. CLI keys need `gateway:*`, `tools:*`, `database:*`, `storage:*` |
+| `tools` command missing | Old CLI | `npx @vectoree/cli tools status` (need ≥ 0.1.8). Do not use a stale global install. |
+| Wallet / billing errors on `ai chat` or `tools search` | Org wallet empty | Organization → Billing |
 | `db create` rejects columns | Used reserved `id` / `created_at` / `updated_at` as the only fields | Add at least one custom column |
 | Codex `BILLING_PRICE_NOT_CONFIGURED` | Bad or unpriced model slug | `ai models search`; try the `~…-latest` form |
 | ChatGPT desktop history looks empty after C07 | API-provider mode | Expected. Restore with the setup script → `r` |
