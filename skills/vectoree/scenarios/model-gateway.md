@@ -19,13 +19,27 @@ Catalog ids come from `ai models search`, not from guessing OpenAI-only names.
 
 ## S10: which models?
 
+Catalog models expose `inputModality` and `outputModality`. Filter on **both** when the developer asks for TTS, STT, video, embeddings, etc. Do not guess slugs from OpenRouter names alone.
+
 ```bash
 npx @vectoree/cli ai models list
 npx @vectoree/cli ai models search deepseek
 npx @vectoree/cli ai models get <model-id>
+
+# filter by output modality (what the model produces)
+npx @vectoree/cli ai models list --output-modality speech          # TTS
+npx @vectoree/cli ai models list --output-modality transcription   # STT output
+npx @vectoree/cli ai models list --output-modality video
+
+# filter by input + output (STT: audio in → transcription out)
+npx @vectoree/cli ai models list --input-modality audio --output-modality transcription
+
+# combine search + modality
+npx @vectoree/cli ai models search whisper --output-modality transcription
+npx @vectoree/cli ai models search veo --output-modality video
 ```
 
-Pick by modality and price. Pass `--json` when you need to parse.
+Modality values mirror OpenRouter: `text`, `image`, `audio`, `speech`, `transcription`, `video`, `embeddings`, `rerank`, `file`. Pass `--json` when you need to parse. Comma-separate for AND filters (e.g. `--input-modality text,image`).
 
 ---
 

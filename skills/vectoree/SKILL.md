@@ -1,11 +1,11 @@
 ---
 name: vectoree
-version: 0.4.0
+version: 0.4.1
 description: Use when connecting an app to Vectoree Cloud, listing or calling models through the Vectoree gateway, managing project database or storage via @vectoree/cli, migrating OpenAI SDK calls, or pointing Codex at Vectoree. Install with npx skills add VectoreeAI/vectoree-skills.
 homepage: https://github.com/VectoreeAI/vectoree-skills
 cli_package: "@vectoree/cli"
 api_base_hint: Default API origin is https://vectoree.ai (override with VECTOREE_API_URL if needed)
-last_updated: 2026-08-17
+last_updated: 2026-08-18
 ---
 
 # Vectoree for AI Coding Agents
@@ -114,7 +114,7 @@ Match what the developer said. Fetch the matching **long playbook** (raw URL in 
 
 | ID | Developer says | Do this |
 |----|----------------|---------|
-| **S10** | "有哪些模型" | `ai models list` / `search` / `get`. Pick by modality and price. |
+| **S10** | "有哪些模型" / TTS / STT / 视频 | `ai models list` / `search` / `get`. Filter with `--input-modality` and `--output-modality` (e.g. `speech`, `transcription`, `video`). |
 | **S11** | "用 DeepSeek / Claude / 某个模型" | `ai models search` → `ai chat` → `ai snippet` → paste into app code |
 | **S12** | "先免费打一下" | `ai chat "ping"` (default `vectoree/free`) |
 | **S13** | "帮我选便宜能用的" | `ai chat --model vectoree/auto`. Do not hardcode a vendor. |
@@ -258,12 +258,18 @@ npx @vectoree/cli storage upload <bucket> ./file.png --key avatars/me.png
 ### AI / Model Gateway
 
 ```bash
-npx @vectoree/cli ai models list
-npx @vectoree/cli ai models search <query>
+npx @vectoree/cli ai models list [--input-modality <m>] [--output-modality <m>]
+npx @vectoree/cli ai models search <query> [--input-modality <m>] [--output-modality <m>]
 npx @vectoree/cli ai models get <model>
 npx @vectoree/cli ai status
 npx @vectoree/cli ai chat "<prompt>" [--model <id>]   # default: vectoree/free
 npx @vectoree/cli ai snippet [--model <id>] [--lang ts|python]
+
+# modality examples (comma-separated values allowed)
+npx @vectoree/cli ai models list --output-modality speech          # TTS
+npx @vectoree/cli ai models list --input-modality audio --output-modality transcription  # STT
+npx @vectoree/cli ai models list --output-modality video
+npx @vectoree/cli ai models search veo --output-modality video
 ```
 
 Global flags: `--json`, `--yes`, `--api-url <url>`.
