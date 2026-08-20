@@ -61,9 +61,10 @@ npx @vectoree/cli auth snippet --rest --lang ts
 
 ### Runtime paths (server / BFF with `auth:*` key)
 
-- `POST /api/auth/users` — register
-- `POST /api/auth/sessions` — password login
-- `POST /api/auth/email/send-verification` then `POST /api/auth/email/verify` (body field `otp`, 8 digits)
+- `POST /api/auth/users` — register (**already emails** the 8-digit code when verification is on)
+- `POST /api/auth/sessions` — password login (also emails a code if still unverified, then 403)
+- `POST /api/auth/email/send-verification` — **resend only**; do not call right after register/login or the user gets two OTPs
+- `POST /api/auth/email/verify` — body field `otp`, 8 digits
 - `GET /api/auth/oauth/google` or `/github` — only after the owner configured them
 - `GET /api/auth/methods` — what `auth status` uses
 
