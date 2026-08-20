@@ -1,11 +1,11 @@
 ---
 name: vectoree
-version: 0.7.0
+version: 0.8.0
 description: Use when connecting an app to Vectoree Cloud, adding login for users of that app (not Vectoree Cloud login), listing or calling models through the Vectoree gateway (chat, TTS, STT, image, video, embeddings), adding or switching web search to Vectoree Tool Hub MCP, managing project database or storage via @vectoree/cli, migrating OpenAI SDK calls, or pointing Codex at Vectoree. Install with npx skills add VectoreeAI/vectoree-skills.
 homepage: https://github.com/VectoreeAI/vectoree-skills
 cli_package: "@vectoree/cli"
 api_base_hint: Default API origin is https://vectoree.ai (override with VECTOREE_API_URL if needed)
-last_updated: 2026-08-18
+last_updated: 2026-08-20
 ---
 
 # Vectoree for AI Coding Agents
@@ -158,7 +158,7 @@ Drop / full-table delete: stop and confirm.
 | ID | Developer says | Do this |
 |----|----------------|---------|
 | **S40** | "Vectoree 怎么接数据库 / Auth / AI" | `docs list` → `docs get <docType>`. Never invent APIs from memory. |
-| **S41** | "给我的应用加登录" / email+password / Google 登录到我的 App | **C09**. If they said "登录 Vectoree", that is **S01**. |
+| **S41** | "给我的应用加登录" / email+password / Google 登录到我的 App | **C09**. If they said "登录 Vectoree", that is **S01**. Custom UI = BFF + `auth:*` secret; never put the secret in the browser. |
 
 `docType` values: `instructions`, `auth-sdk`, `db-sdk`, `storage-sdk`, `ai-integration-sdk`. Also present but not launch-path: `functions-sdk`, `real-time`, `deployment`, `payments`. `docs search` is not available.
 
@@ -178,7 +178,7 @@ Work toward connecting **their app**. Do not tour CLI modules.
 | **C06** | "把现有 OpenAI 调用迁到 Vectoree" | S04 → S15 | `scenarios/model-gateway.md` |
 | **C07** | "把我的 Codex 供应商切成 Vectoree" | S04 (need a key) → S16 | `scenarios/model-gateway.md` |
 | **C08** | "帮我加一下搜索" / "搜索切到 vectoree" | S04 (need `tools:*`) → S17 | `scenarios/tool-hub.md` |
-| **C09** | "给我的应用加登录" | S04 → `auth status` / `snippet` / `open` | `scenarios/auth.md` |
+| **C09** | "给我的应用加登录" | S04 → `auth status` / `snippet` / `open` (≥ 0.1.11) | `scenarios/auth.md` |
 
 ### Example prompts (paste into the agent)
 
@@ -219,6 +219,8 @@ Use npx @vectoree/cli tools snippet --write --replace-search.
 ```text
 Add login to my app (email + 8-digit code). Follow C09 in the Vectoree skill (scenarios/auth.md).
 This is not Vectoree Cloud login. Do not CREATE TABLE users.
+Use auth snippet: browser → my BFF only; BFF holds VECTOREE_API_KEY with auth:*.
+Never call /api/system/auth/* from the app.
 ```
 
 ---
@@ -256,7 +258,8 @@ npx @vectoree/cli current
 npx @vectoree/cli keys list
 npx @vectoree/cli auth status
 npx @vectoree/cli auth snippet --ui
-npx @vectoree/cli auth snippet --no-ui --lang ts
+npx @vectoree/cli auth snippet --rest --lang ts
+# --no-ui is an alias of --rest
 npx @vectoree/cli auth open
 npx @vectoree/cli auth open --docs
 ```
@@ -312,7 +315,7 @@ npx @vectoree/cli ai models list --output-modality video
 npx @vectoree/cli ai models search veo --output-modality video
 ```
 
-Need `@vectoree/cli` ≥ 0.1.10 for `auth status` / `snippet` / `open` (prefer `npx`). ≥ 0.1.9 for `ai speech` / `transcribe` / `image` / `video` / `embed` and `tools`. `ai chat` on a TTS slug is refused on purpose.
+Need `@vectoree/cli` ≥ **0.1.11** for Console `/api/system/auth` login + `auth status` / `snippet` / `open` (prefer `npx`). ≥ 0.1.9 for `ai speech` / `transcribe` / `image` / `video` / `embed` and `tools`. `ai chat` on a TTS slug is refused on purpose.
 
 ### Tool Hub
 
@@ -339,10 +342,11 @@ If asked, one honest sentence + point at the Dashboard when it still helps. Do n
 
 | Topic | What to say |
 |-------|-------------|
-| Email / Google login for *your app's* users | **C09**. `auth status` / `snippet` / `open`. Identity is `auth.users`. Do not `CREATE TABLE users`. |
-| "登录一下 Vectoree" / CLI login | **S01** (`vectoree login`). Not C09. |
-| Copy Dashboard login / `POST /api/auth/signup` from the app | Forbidden. Those are Cloud console. |
-| Hosted Auth UI / passwordless OTP login | Not shipped. Use `auth snippet --ui` or `--no-ui`. |
+| Email / Google login for *your app's* users | **C09**. `auth status` / `snippet` / `open`. Identity is `auth.users`. Do not `CREATE TABLE users`. Custom UI: BFF holds `VECTOREE_API_KEY` with `auth:*`. |
+| "登录一下 Vectoree" / CLI login | **S01** (`vectoree login` → `/api/system/auth/*`). Not C09. |
+| Copy Dashboard login / call `/api/system/auth/*` from the app | Forbidden. Console identity only. |
+| Put `sk-ve-v1-…` / project secret in the browser | Forbidden. Use a BFF. `pk_…` is publishable only (hosted UI / public data plane), never Gateway. |
+| Passwordless magic-link login | Not the default path. Use email+password + 8-digit verify via `auth snippet`. |
 | Stripe subscriptions for *their* users | Org wallet top-up ≠ tenant payments. Dashboard billing is the org wallet. |
 | File-based migrations, RLS, indexes | Use `db sql` for a one-off; versioned migrations are later. |
 | Storage download / signed URL | CLI has list/create/ls/upload only. |
@@ -365,7 +369,8 @@ If asked, one honest sentence + point at the Dashboard when it still helps. Do n
 | No API key | Not linked | `npx @vectoree/cli link` or set `VECTOREE_API_KEY` |
 | Connection refused | Wrong `VECTOREE_API_URL` | Origin only: `https://vectoree.ai` (or `https://vectoree.net` for staging) |
 | 401 / 403 | Invalid key or missing scope | Relink. CLI keys need `gateway:*`, `tools:*`, `database:*`, `storage:*` |
-| `tools` / `auth` / `ai speech` command missing | Old CLI | `npx @vectoree/cli@0.1.10 --help` (need ≥ 0.1.10 for `auth`). Do not use a stale global install. |
+| `tools` / `auth` / `ai speech` command missing | Old CLI | `npx @vectoree/cli@0.1.11 --help` (need ≥ 0.1.11 for Console `/api/system/auth` + `auth`). Do not use a stale global install. |
+| App Auth: `RESEND_API_KEY is not configured` | Platform mail not wired / wallet | Tell the owner: Auth methods + org wallet must be ready; agent cannot invent Resend keys. |
 | TTS `GATEWAY_NO_AVAILABLE_CHANNEL` on `ai chat` | Used chat for a speech model | `ai speech "hello" --model <id>`. Runtime is `POST /api/v1/audio/speech`. |
 | Wallet / billing errors on `ai chat` or `tools search` | Org wallet empty | Organization → Billing |
 | `db create` rejects columns | Used reserved `id` / `created_at` / `updated_at` as the only fields | Add at least one custom column |
