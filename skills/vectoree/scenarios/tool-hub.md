@@ -103,7 +103,7 @@ npx @vectoree/cli tools extract https://vectoree.ai
 
 REST equivalents (same key): `POST {VECTOREE_API_URL}/api/tools/v1/search` and `/extract`.
 
-Pricing (wallet): `search` is billed per request; `extract` per URL (max 5). If the call fails with wallet / billing errors, Organization → Billing.
+Pricing (wallet): `search` is billed per request; `extract` per URL (max 5). If the call fails with wallet / billing 402s, **stop**. Send `{VECTOREE_API_URL}/dashboard/organization/billing` to the owner, or run `npx @vectoree/cli billing open`. Do not retry.
 
 ---
 

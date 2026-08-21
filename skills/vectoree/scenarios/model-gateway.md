@@ -1,6 +1,6 @@
 # Model Gateway
 
-Use this playbook for **S10–S16**, **C03**, **C06**, and **C07**. Parent skill: `SKILL.md` in this folder (or https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skills/vectoree/SKILL.md)
+Use this playbook for **S10–S16**, **S14b**, **C03**, **C06**, and **C07**. Parent skill: `SKILL.md` in this folder (or https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skills/vectoree/SKILL.md)
 
 Need a project API key first (`scenarios/connect.md`). App inference uses OpenAI-compatible HTTP. Agent ops use the CLI. Do not mix them.
 
@@ -105,6 +105,16 @@ npx @vectoree/cli ai status
 ```
 
 Usage lives in Dashboard → Organization → Billing until `ai usage` exists. Do not invent a usage CLI.
+
+## S14b: empty wallet / top-up
+
+`402` with `BILLING_WALLET_NOT_ACTIVATED` or "Organization balance is insufficient" means the **org wallet** has no funds. The agent cannot charge a card.
+
+1. Stop. Do not retry `ai chat` / Codex / `tools search`.
+2. Send this URL to the human owner in the chat: `{VECTOREE_API_URL}/dashboard/organization/billing` (default `https://vectoree.ai/dashboard/organization/billing`).
+3. Or open it: `npx @vectoree/cli billing open` (CLI ≥ 0.1.14). If that command is missing, open the URL in the browser yourself.
+
+The 402 error body already includes this URL. Copy it if present.
 
 ---
 

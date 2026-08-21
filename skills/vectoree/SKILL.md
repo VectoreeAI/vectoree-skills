@@ -1,11 +1,11 @@
 ---
 name: vectoree
-version: 0.8.0
+version: 0.8.1
 description: Use when connecting an app to Vectoree Cloud, adding login for users of that app (not Vectoree Cloud login), listing or calling models through the Vectoree gateway (chat, TTS, STT, image, video, embeddings), adding or switching web search to Vectoree Tool Hub MCP, managing project database or storage via @vectoree/cli, migrating OpenAI SDK calls, or pointing Codex at Vectoree. Install with npx skills add VectoreeAI/vectoree-skills.
 homepage: https://github.com/VectoreeAI/vectoree-skills
 cli_package: "@vectoree/cli"
 api_base_hint: Default API origin is https://vectoree.ai (override with VECTOREE_API_URL if needed)
-last_updated: 2026-08-20
+last_updated: 2026-08-21
 ---
 
 # Vectoree for AI Coding Agents
@@ -121,6 +121,7 @@ Match what the developer said. Fetch the matching **long playbook** (raw URL in 
 | **S12** | "先免费打一下" | `ai chat "ping"` (default `vectoree/free`) |
 | **S13** | "帮我选便宜能用的" | `ai chat --model vectoree/auto`. Do not hardcode a vendor. |
 | **S14** | "网关通不通 / 花了多少" | `ai status`. Usage lives in Dashboard → Organization → Billing until `ai usage` exists. |
+| **S14b** | "没钱了 / 充值 / wallet 402" | **Stop retrying.** Send `{origin}/dashboard/organization/billing` to the human owner, or run `npx @vectoree/cli billing open`. |
 | **S15** | "把这段改成走 Vectoree 网关" | `ai snippet --lang ts\|python`, then rewrite existing OpenAI SDK calls (`baseURL` + project key). |
 | **S16** | "把我的 Codex 供应商切成 Vectoree" | See **C07**. One-click script, or surgically edit `~/.codex/config.toml`. |
 
@@ -232,7 +233,7 @@ These five files ship **next to this SKILL.md** (`scenarios/`). If they exist on
 | File | IDs | Raw URL |
 |------|-----|---------|
 | `scenarios/connect.md` | S01–S04, C01 | https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skills/vectoree/scenarios/connect.md |
-| `scenarios/model-gateway.md` | S10–S16, C03, C06, C07 | https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skills/vectoree/scenarios/model-gateway.md |
+| `scenarios/model-gateway.md` | S10–S16, S14b, C03, C06, C07 | https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skills/vectoree/scenarios/model-gateway.md |
 | `scenarios/tool-hub.md` | S17–S19, C08 | https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skills/vectoree/scenarios/tool-hub.md |
 | `scenarios/auth.md` | S41, C09 | https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skills/vectoree/scenarios/auth.md |
 | `scenarios/database.md` | S20–S24, C02 | https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skills/vectoree/scenarios/database.md |
@@ -262,6 +263,7 @@ npx @vectoree/cli auth snippet --rest --lang ts
 # --no-ui is an alias of --rest
 npx @vectoree/cli auth open
 npx @vectoree/cli auth open --docs
+npx @vectoree/cli billing open
 ```
 
 ### Docs
@@ -315,7 +317,7 @@ npx @vectoree/cli ai models list --output-modality video
 npx @vectoree/cli ai models search veo --output-modality video
 ```
 
-Need `@vectoree/cli` ≥ **0.1.11** for Console `/api/system/auth` login + `auth status` / `snippet` / `open` (prefer `npx`). ≥ 0.1.9 for `ai speech` / `transcribe` / `image` / `video` / `embed` and `tools`. `ai chat` on a TTS slug is refused on purpose.
+Need `@vectoree/cli` ≥ **0.1.14** for `billing open`. ≥ **0.1.11** for Console `/api/system/auth` login + `auth status` / `snippet` / `open` (prefer `npx`). ≥ 0.1.9 for `ai speech` / `transcribe` / `image` / `video` / `embed` and `tools`. `ai chat` on a TTS slug is refused on purpose.
 
 ### Tool Hub
 
@@ -369,10 +371,10 @@ If asked, one honest sentence + point at the Dashboard when it still helps. Do n
 | No API key | Not linked | `npx @vectoree/cli link` or set `VECTOREE_API_KEY` |
 | Connection refused | Wrong `VECTOREE_API_URL` | Origin only: `https://vectoree.ai` (or `https://vectoree.net` for staging) |
 | 401 / 403 | Invalid key or missing scope | Relink. CLI keys need `gateway:*`, `tools:*`, `database:*`, `storage:*` |
-| `tools` / `auth` / `ai speech` command missing | Old CLI | `npx @vectoree/cli@0.1.11 --help` (need ≥ 0.1.11 for Console `/api/system/auth` + `auth`). Do not use a stale global install. |
-| App Auth: `RESEND_API_KEY is not configured` | Platform mail not wired / wallet | Tell the owner: Auth methods + org wallet must be ready; agent cannot invent Resend keys. |
+| `tools` / `auth` / `billing open` / `ai speech` command missing | Old CLI | `npx @vectoree/cli@0.1.14 --help` (need ≥ 0.1.14 for `billing open`; ≥ 0.1.11 for Console `/api/system/auth` + `auth`). Do not use a stale global install. |
+| App Auth: `RESEND_API_KEY is not configured` | Platform mail not wired / wallet | Tell the owner: Auth methods + org wallet must be ready; agent cannot invent Resend keys. If the wallet is empty, follow **S14b**. |
 | TTS `GATEWAY_NO_AVAILABLE_CHANNEL` on `ai chat` | Used chat for a speech model | `ai speech "hello" --model <id>`. Runtime is `POST /api/v1/audio/speech`. |
-| Wallet / billing errors on `ai chat` or `tools search` | Org wallet empty | Organization → Billing |
+| Wallet / billing 402 (`BILLING_WALLET_NOT_ACTIVATED` / org balance insufficient) on `ai chat`, Codex, or `tools search` | Org wallet empty or not topped up | **S14b.** Paste `{VECTOREE_API_URL}/dashboard/organization/billing` (default `https://vectoree.ai/dashboard/organization/billing`) in the chat for the owner, **or** `npx @vectoree/cli billing open`. Do not retry the failing call. |
 | `db create` rejects columns | Used reserved `id` / `created_at` / `updated_at` as the only fields | Add at least one custom column |
 | Codex `BILLING_PRICE_NOT_CONFIGURED` | Bad or unpriced model slug | `ai models search`; try the `~…-latest` form |
 | ChatGPT desktop history looks empty after C07 | API-provider mode | Expected. Restore with the setup script → `r` |
