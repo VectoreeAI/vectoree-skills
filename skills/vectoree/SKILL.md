@@ -1,6 +1,6 @@
 ---
 name: vectoree
-version: 0.8.2
+version: 0.8.3
 description: Use when connecting an app to Vectoree Cloud, adding login for users of that app (not Vectoree Cloud login), listing or calling models through the Vectoree gateway (chat, TTS, STT, image, video, embeddings), adding or switching web search to Vectoree Tool Hub MCP, managing project database or storage via @vectoree/cli, migrating OpenAI SDK calls, or pointing Codex at Vectoree. Install with npx skills add VectoreeAI/vectoree-skills.
 homepage: https://github.com/VectoreeAI/vectoree-skills
 cli_package: "@vectoree/cli"
@@ -207,7 +207,7 @@ Run the one-click setup (macOS/Linux):
   bash <(curl -fsSL https://vectoree.ai/scripts/codex-vectoree-setup.sh)
 Or on Windows PowerShell:
   irm https://vectoree.ai/scripts/codex-vectoree-setup.ps1 | iex
-I already have (or you can create) a project API key (sk-ve-v1-...).
+Prefer menu 1 (project key) or 2 (employee key) so the script opens a browser and mints the key.
 Docs: https://docs.vectoree.ai/codex
 Follow C07 in the Vectoree skill if the script is unavailable:
 https://raw.githubusercontent.com/VectoreeAI/vectoree-skills/main/skills/vectoree/scenarios/model-gateway.md

@@ -151,7 +151,13 @@ bash <(curl -fsSL https://vectoree.ai/scripts/codex-vectoree-setup.sh)
 irm https://vectoree.ai/scripts/codex-vectoree-setup.ps1 | iex
 ```
 
-Menu: `1`–`5` curated slugs, `c` custom slug, `r` restore. Type `y` on first install. Optional env: `VECTOREE_API_KEY`, `VECTOREE_BASE_URL` (default `https://vectoree.ai/api/v1/`), `CODEX_HOME`.
+First menu: model slug (`1`–`5` / `c`) or `r` restore. On install, the script asks how to get a key:
+
+1. **Project key** — device-code browser login (same as `vectoree login --use-device-code`), pick a project, mint `sk-ve-v1-…`
+2. **Employee key** — same login, pick an org with an active Employee AI seat, rotate `ek-ve-v1-…`
+3. **Paste** an existing key
+
+Optional env: `VECTOREE_API_KEY` (skips login), `VECTOREE_BASE_URL` (default `https://vectoree.ai/api/v1/`), `CODEX_HOME`. It also reuses `.vectoree/config.json` from a prior `vectoree link` when present.
 
 **Agent, non-interactive:** do not replace the whole file (MCP servers and other keys must stay). Backup `~/.codex/config.toml` first, then set:
 
