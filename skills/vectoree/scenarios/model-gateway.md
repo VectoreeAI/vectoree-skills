@@ -8,12 +8,22 @@ Need a project API key first (`scenarios/connect.md`). App inference uses OpenAI
 
 ## Product models
 
+Default for `ai chat` / `ai snippet` / Codex is `vectoree/auto`. Catalog ids otherwise come from `ai models search`, not from guessing OpenAI-only names.
+
 | Model | Kind | Behavior |
 |-------|------|----------|
-| `vectoree/free` | alias | Free-tier default. Use this for a first ping. |
-| `vectoree/auto` | router | Picks a cheap/available catalog model per request. Do not hardcode a vendor. |
-
-Catalog ids come from `ai models search`, not from guessing OpenAI-only names.
+| `vectoree/auto` | router | Default. Picks a cheap or available catalog model per request. Do not hardcode a vendor. |
+| `vectoree/free` | alias | Free-tier ping. Pass `--model vectoree/free`. |
+| `deepseek/deepseek-v4-pro` | chat | Hot. Codex menu 2. |
+| `qwen/qwen3-max` | chat | Hot. Codex menu 3. |
+| `qwen/qwen-plus` | chat | Hot. Codex menu 4. |
+| `z-ai/glm-5.2` | chat | Hot. Codex menu 5. |
+| `qwen/qwen3.5-plus-02-15` | chat | Hot. Codex menu 6. |
+| `qwen/qwen3-coder-flash` | chat | Hot. Codex menu 7. |
+| `alibaba/wan-3.0` | video | Hot. Do not use with `ai chat` or Codex. |
+| `alibaba/wan-2.7-t2v` | video | Hot. Do not use with `ai chat` or Codex. |
+| `alibaba/happyhorse-1.1-t2v` | video | Hot. Do not use with `ai chat` or Codex. |
+| `alibaba/wan-3.0-prime` | video | Hot. Do not use with `ai chat` or Codex. |
 
 ---
 
@@ -60,7 +70,7 @@ Runtime paths: `POST /api/v1/audio/speech`, `/audio/transcriptions`, `/images`, 
 ## S12: ping for free
 
 ```bash
-npx @vectoree/cli ai chat "ping"   # default: vectoree/free
+npx @vectoree/cli ai chat "ping" --model vectoree/free
 ```
 
 ---
@@ -68,7 +78,7 @@ npx @vectoree/cli ai chat "ping"   # default: vectoree/free
 ## S13: pick something cheap that works
 
 ```bash
-npx @vectoree/cli ai chat "ping" --model vectoree/auto
+npx @vectoree/cli ai chat "ping"   # default: vectoree/auto
 ```
 
 ---
@@ -78,7 +88,7 @@ npx @vectoree/cli ai chat "ping" --model vectoree/auto
 ```bash
 npx @vectoree/cli ai models search deepseek
 npx @vectoree/cli ai chat "ping"
-npx @vectoree/cli ai snippet --model vectoree/free --lang ts
+npx @vectoree/cli ai snippet --model vectoree/auto --lang ts
 ```
 
 Paste the snippet into a **server** route (API route or server action). The browser calls your server; your server calls Vectoree. Do not put `VECTOREE_API_KEY` in a client bundle.
@@ -151,7 +161,7 @@ bash <(curl -fsSL https://vectoree.ai/scripts/codex-vectoree-setup.sh)
 irm https://vectoree.ai/scripts/codex-vectoree-setup.ps1 | iex
 ```
 
-First menu: model slug (`1`–`5` / `c`) or `r` restore. On install, the script asks how to get a key:
+First menu: model slug (`1`–`7` / `c`) or `r` restore. Menu **1** is `vectoree/auto`. On install, the script asks how to get a key:
 
 1. **Project key** — device-code browser login (same as `vectoree login --use-device-code`), pick a project, mint `sk-ve-v1-…`
 2. **Employee key** — same login, pick an org with an active Employee AI seat, rotate `ek-ve-v1-…`
@@ -162,7 +172,7 @@ Optional env: `VECTOREE_API_KEY` (skips login), `VECTOREE_BASE_URL` (default `ht
 **Agent, non-interactive:** do not replace the whole file (MCP servers and other keys must stay). Backup `~/.codex/config.toml` first, then set:
 
 ```toml
-model = "~deepseek/deepseek-v4-flash-latest"
+model = "vectoree/auto"
 model_provider = "vectoree"
 model_reasoning_effort = "high"
 
