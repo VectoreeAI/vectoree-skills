@@ -12,8 +12,7 @@ Default for `ai chat` / `ai snippet` / Codex is `vectoree/auto`. Catalog ids oth
 
 | Model | Kind | Behavior |
 |-------|------|----------|
-| `vectoree/auto` | router | Default. Picks a cheap or available catalog model per request. Do not hardcode a vendor. |
-| `vectoree/free` | alias | Free-tier ping. Pass `--model vectoree/free`. |
+| `vectoree/auto` | router | Default. Picks a cheap or available catalog model per request. Do not hardcode a vendor. Omit `--model`. |
 | `deepseek/deepseek-v4-pro` | chat | Hot. Codex menu 2. |
 | `qwen/qwen3-max` | chat | Hot. Codex menu 3. |
 | `qwen/qwen-plus` | chat | Hot. Codex menu 4. |
@@ -67,10 +66,10 @@ Runtime paths: `POST /api/v1/audio/speech`, `/audio/transcriptions`, `/images`, 
 
 ---
 
-## S12: ping for free
+## S12: ping
 
 ```bash
-npx @vectoree/cli ai chat "ping" --model vectoree/free
+npx @vectoree/cli ai chat "ping"   # default: vectoree/auto
 ```
 
 ---
