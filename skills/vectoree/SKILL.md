@@ -1,11 +1,11 @@
 ---
 name: vectoree
-version: 0.8.3
+version: 0.8.4
 description: Use when connecting an app to Vectoree Cloud, adding login for users of that app (not Vectoree Cloud login), listing or calling models through the Vectoree gateway (chat, TTS, STT, image, video, embeddings), adding or switching web search to Vectoree Tool Hub MCP, managing project database or storage via @vectoree/cli, migrating OpenAI SDK calls, or pointing Codex at Vectoree. Install with npx skills add VectoreeAI/vectoree-skills.
 homepage: https://github.com/VectoreeAI/vectoree-skills
 cli_package: "@vectoree/cli"
 api_base_hint: Default API origin is https://vectoree.ai (override with VECTOREE_API_URL if needed)
-last_updated: 2026-08-24
+last_updated: 2026-09-03
 ---
 
 # Vectoree for AI Coding Agents
@@ -118,8 +118,8 @@ Match what the developer said. Fetch the matching **long playbook** (raw URL in 
 | **S10** | "有哪些模型" / TTS / STT / 视频 / 生图 / embedding | `ai models list` / `search` / `get` with `--input-modality` / `--output-modality`. Then probe the **matching** command (do not `ai chat` a TTS slug). |
 | **S11** | "用 DeepSeek / Claude / 某个文本模型" | `ai models search` → `ai chat` → `ai snippet` → paste into app code |
 | **S11b** | "用 TTS / STT / 生图 / 视频 / embedding" | Filter catalog → `ai speech` / `transcribe` / `image` / `video` / `embed` → `ai snippet --model <id>`. Runtime paths: `/audio/speech`, `/audio/transcriptions`, `/images`, `/videos`, `/embeddings`. |
-| **S12** | "先免费打一下" | `ai chat "ping"` (default `vectoree/free`) |
-| **S13** | "帮我选便宜能用的" | `ai chat --model vectoree/auto`. Do not hardcode a vendor. |
+| **S12** | "先免费打一下" | `ai chat "ping" --model vectoree/free` |
+| **S13** | "帮我选便宜能用的" | `ai chat "ping"` (default `vectoree/auto`). Do not hardcode a vendor. |
 | **S14** | "网关通不通 / 花了多少" | `ai status`. Usage lives in Dashboard → Organization → Billing until `ai usage` exists. |
 | **S14b** | "没钱了 / 充值 / wallet 402" | **Stop retrying.** Send `{origin}/dashboard/organization/billing` to the human owner, or run `npx @vectoree/cli billing open`. |
 | **S15** | "把这段改成走 Vectoree 网关" | `ai snippet --lang ts\|python`, then rewrite existing OpenAI SDK calls (`baseURL` + project key). |
@@ -194,7 +194,7 @@ Then login, link, write .env, gitignore .vectoree/, then ai status.
 **C03**
 
 ```text
-Build a small AI chat page on Vectoree. Use vectoree/free first.
+Build a small AI chat page on Vectoree. Use vectoree/auto first.
 Probe with npx @vectoree/cli ai chat "ping", then paste ai snippet into a server route.
 Do not put the API key in the browser bundle.
 ```
@@ -308,7 +308,7 @@ npx @vectoree/cli ai models list [--input-modality <m>] [--output-modality <m>]
 npx @vectoree/cli ai models search <query> [--input-modality <m>] [--output-modality <m>]
 npx @vectoree/cli ai models get <model>
 npx @vectoree/cli ai status
-npx @vectoree/cli ai chat "<prompt>" [--model <id>]   # text chat only; default vectoree/free
+npx @vectoree/cli ai chat "<prompt>" [--model <id>]   # text chat only; default vectoree/auto
 npx @vectoree/cli ai speech "<text>" --model <tts-id> [--voice <id>] [--out speech.mp3]
 npx @vectoree/cli ai transcribe --model <stt-id> [--file clip.wav]
 npx @vectoree/cli ai image "<prompt>" --model <image-id>
