@@ -45,7 +45,7 @@ export VECTOREE_API_KEY=sk-ve-v1-your_key_here
 npx @vectoree/cli ai status
 ```
 
-Create the key in Dashboard → API Keys (or from a prior `link` on a laptop). Staging origin: `https://vectoree.net`.
+Create the key in Dashboard → API Keys (or from a prior `link` on a laptop).
 
 `VECTOREE_API_URL` is the origin (no trailing `/api`).
 
