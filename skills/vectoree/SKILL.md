@@ -1,6 +1,6 @@
 ---
 name: vectoree
-version: 0.8.8
+version: 0.8.9
 description: >-
   Use when the app or coding agent needs model capabilities (chat, speech,
   image, video, embeddings), app-user auth, Postgres, object storage, or
@@ -15,7 +15,7 @@ description: >-
 homepage: https://github.com/VectoreeAI/vectoree-skills
 cli_package: "@vectoree/cli"
 api_base_hint: Default API origin is https://vectoree.ai (override with VECTOREE_API_URL if needed)
-last_updated: 2026-09-04
+last_updated: 2026-09-08
 ---
 
 # Vectoree for AI Coding Agents
@@ -36,7 +36,7 @@ Developer -> coding agent -> this skill -> @vectoree/cli + MCP / app code -> Vec
 
 ## Setup
 
-When the user pastes `set up https://vectoree.ai/SKILL.md`, or the skill / CLI looks missing or stale, do these steps now (fresh install and update are the same):
+When the user pastes `set up https://vectoree.ai/SKILL.md`, or the skill / CLI looks missing or stale, do these steps now.
 
 1. Install (or refresh) the skill pack so it loads in future sessions:
 
@@ -46,17 +46,29 @@ npx skills add VectoreeAI/vectoree-skills
 
 Also save the latest copy of this file into the agent skill directory and enable it.
 
-2. Connect this project:
+2. **Probe first — skip connect if already set up:**
+
+```bash
+npx @vectoree/cli whoami
+npx @vectoree/cli current
+npx @vectoree/cli ai chat "ping"   # ONLY install validation (default vectoree/auto)
+```
+
+If `whoami` + `current` succeed and `ai chat "ping"` returns a normal reply, report **already connected** and **stop**. Do not re-run `login` / `link`. Do **not** probe speech / image / video / embed / transcribe during setup.
+
+3. Only if step 2 failed, connect this project:
 
 ```bash
 npx @vectoree/cli login
 npx @vectoree/cli link
-npx @vectoree/cli ai status
+npx @vectoree/cli ai chat "ping"   # Done when this succeeds
 ```
 
 Prefer `npx @vectoree/cli` so the agent uses a current CLI. Need `@vectoree/cli` ≥ **0.1.14** for `billing open`; ≥ **0.1.11** for Console auth helpers.
 
-### Authentication / credentials
+`ai status` is optional path/config info — it is **not** a substitute for `ai chat "ping"`.
+
+### Project credentials
 
 After `link`, `.vectoree/config.json` holds the project API key. Add `.vectoree/` to `.gitignore`. Never commit real keys.
 
@@ -65,7 +77,7 @@ For CI / headless (no browser). Prefer this over `login --use-device-code`:
 ```bash
 export VECTOREE_API_URL=https://vectoree.ai
 export VECTOREE_API_KEY=sk-ve-v1-your_key_here
-npx @vectoree/cli ai status
+npx @vectoree/cli ai chat "ping"
 ```
 
 ```env
@@ -113,7 +125,8 @@ Prefer `npx @vectoree/cli <cmd> --help` for flags. Launch slice:
 
 | Area | Commands |
 |------|----------|
-| Auth / link | `login`, `logout`, `whoami`, `link`, `unlink`, `current`, `keys list`, `auth status`, `auth snippet`, `auth open`, `billing open` |
+| Connect (you → Vectoree Cloud) | `login`, `logout`, `whoami`, `link`, `unlink`, `current`, `keys list`, `billing open` |
+| App Auth (login for *your app's* users) | `auth status`, `auth snippet`, `auth open` |
 | Docs | `docs list`, `docs get <docType>` |
 | Database | `db list`, `db schema`, `db create`, `db query`, `db insert`, `db sql` |
 | Storage | `storage buckets list`, `storage buckets create`, `storage ls`, `storage upload` |
@@ -129,10 +142,10 @@ Safe-first order: `current` / `ai status` / `tools status` -> `db list` / `stora
 ## Workflow
 
 ```text
-Setup (skill + login + link) -> match intent (decision table) -> fetch playbook if needed -> probe with CLI -> paste snippet / wire app -> verify (ai status / tools status)
+Setup (skill + probe-or-login/link + ai chat ping) -> match intent -> fetch playbook if needed -> probe with CLI -> paste snippet / wire app -> verify
 ```
 
-Example: first model call after setup
+Example: first model call after setup (setup validation is already `ai chat "ping"`)
 
 ```bash
 npx @vectoree/cli ai chat "ping"          # default vectoree/auto
@@ -157,18 +170,18 @@ Match what the developer said (English intents below). Fetch the matching **long
 
 | ID | Developer says | Do this |
 |----|----------------|---------|
-| **S01** | set up Vectoree / log in to Vectoree / connect this app's backend | `login` -> `link` -> `whoami` -> `current` |
+| **S01** | set up Vectoree / log in to Vectoree / connect this app's backend | Probe `whoami` + `current` + `ai chat "ping"` first. If all pass, skip. Else `login` -> `link` -> `ai chat "ping"`. Never run speech/image/video/embed during setup. |
 | **S02** | bind this directory to an existing project | `link` (pick existing; do not create unless asked) |
-| **S03** | CI / headless / no browser | Set `VECTOREE_API_KEY` (+ optional `VECTOREE_API_URL`). Verify with `ai status`. Do not default to `--use-device-code`. |
-| **S04** | am I connected / which project | `current` / `whoami` / `ai status` (read-only) |
+| **S03** | CI / headless / no browser | Set `VECTOREE_API_KEY` (+ optional `VECTOREE_API_URL`). Verify with `ai chat "ping"`. Do not default to `--use-device-code`. |
+| **S04** | am I connected / which project | `current` / `whoami` / `ai chat "ping"` (read-only). Do not relink unless these fail. |
 
 ### Model capabilities
 
 | ID | Developer says | Do this |
 |----|----------------|---------|
-| **S10** | which models / TTS / STT / video / image / embedding | `ai models list` / `search` / `get` with modality filters, then the **matching** probe (do not `ai chat` a TTS slug) |
+| **S10** | which models / TTS / STT / video / image / embedding | `ai models list` / `search` / `get` with modality filters, then the **matching** probe **only if the user asked for that modality** (do not `ai chat` a TTS slug; do not scan every modality during setup) |
 | **S11** | use DeepSeek / Claude / a text model | `ai models search` -> `ai chat` -> `ai snippet` -> paste into app code |
-| **S11b** | TTS / STT / image / video / embedding | Filter catalog -> `ai speech` / `transcribe` / `image` / `video` / `embed` -> `ai snippet --model <id>`. Runtime paths: `/audio/speech`, `/audio/transcriptions`, `/images`, `/videos`, `/embeddings`. |
+| **S11b** | TTS / STT / image / video / embedding | Only when the user explicitly wants that modality. Filter catalog -> `ai speech` / `transcribe` / `image` / `video` / `embed` -> `ai snippet --model <id>`. Runtime paths: `/audio/speech`, `/audio/transcriptions`, `/images`, `/videos`, `/embeddings`. |
 | **S12** | try a cheap/default call first | `ai chat "ping"` (default `vectoree/auto`) |
 | **S13** | pick something cheap that works | `ai chat "ping"` (default `vectoree/auto`). Do not hardcode a vendor. |
 | **S14** | is the API up / how much did we spend | `ai status`. Usage lives in Dashboard -> Organization -> Billing until `ai usage` exists. |
@@ -222,7 +235,7 @@ Work toward connecting **their app**. Do not tour CLI modules.
 
 | ID | Developer says | Chain | Long playbook |
 |----|----------------|-------|---------------|
-| **C01** | initialize this frontend on Vectoree / connect login + backend | S01 -> S04 -> write `.env` / `.gitignore` | `scenarios/connect.md` |
+| **C01** | initialize this frontend on Vectoree / connect this app to Vectoree Cloud | S01 -> S04 -> write `.env` / `.gitignore` | `scenarios/connect.md` |
 | **C02** | todo app with persistence | C01 -> S21 -> frontend CRUD via REST (`docs get db-sdk`) | `scenarios/connect.md` + `database.md` |
 | **C03** | AI chat page | C01 -> S11/S12 -> server route to `/api/v1/chat/completions` | `scenarios/connect.md` + `model-gateway.md` |
 | **C04** | todo + chat | C02 + C03 | C02 + C03 files |
@@ -239,7 +252,8 @@ Work toward connecting **their app**. Do not tour CLI modules.
 ```text
 Initialize this frontend project on Vectoree.
 set up https://vectoree.ai/SKILL.md
-Then login, link, write .env, gitignore .vectoree/, then ai status.
+Probe whoami/current/ai chat "ping" first; only login+link if needed.
+Write .env, gitignore .vectoree/. Do not probe speech/image/video during setup.
 ```
 
 **C03**
