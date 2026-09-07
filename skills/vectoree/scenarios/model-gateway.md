@@ -144,7 +144,7 @@ Done when `baseURL` points at the project gateway and model ids come from search
 
 ## S16 / C07: point Codex at Vectoree
 
-This switches **Codex CLI** (and ChatGPT desktop, which shares `~/.codex`) to the Vectoree Model Gateway. It is not C01 (app backend). You still need a project API key (`sk-ve-v1-…` or employee `ek-ve-v1-…`). Do not use the instance master key (`ik_`).
+This switches **Codex CLI** (and ChatGPT desktop, which shares `~/.codex`) to the Vectoree Model Gateway. It is not C01 (app backend). You still need a **project key** (`sk-ve-v1-…`) **or** an **employee key** (`ek-ve-v1-…`) — they are different credentials. Do not use the instance master key (`ik_`).
 
 Human docs (copy-paste commands): https://docs.vectoree.ai/codex
 
