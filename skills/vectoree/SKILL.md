@@ -1,6 +1,6 @@
 ---
 name: vectoree
-version: 0.8.9
+version: 0.9.0
 description: >-
   Use when the app or coding agent needs model capabilities (chat, speech,
   image, video, embeddings), app-user auth, Postgres, object storage, or
@@ -15,7 +15,7 @@ description: >-
 homepage: https://github.com/VectoreeAI/vectoree-skills
 cli_package: "@vectoree/cli"
 api_base_hint: Default API origin is https://vectoree.ai (override with VECTOREE_API_URL if needed)
-last_updated: 2026-09-08
+last_updated: 2026-10-09
 ---
 
 # Vectoree for AI Coding Agents
@@ -36,7 +36,25 @@ Developer -> coding agent -> this skill -> @vectoree/cli + MCP / app code -> Vec
 
 ## Setup
 
-When the user pastes `set up https://vectoree.ai/SKILL.md`, or the skill / CLI looks missing or stale, do these steps now.
+### Clone a repo, then link that directory
+
+If the same message tells you to clone a repository, that path wins over every other setup step. Do not link the directory you were in when the message arrived. Do not edit the cloned app. Do not open a playbook. `current` succeeding is the end.
+
+1. Clone the URL in the message.
+2. Change into that cloned directory.
+3. Run the CLI from that directory with `npx @vectoree/cli` (this uses the current `@vectoree/cli`; do not install a second client). Then:
+
+```bash
+npx @vectoree/cli login
+npx @vectoree/cli link
+npx @vectoree/cli current
+```
+
+Done when `current` prints the linked project. Stop. Do not run `whoami`, `ai chat`, `ai status`, or any other command.
+
+### Connect the current directory
+
+Use this section only when the message does not ask you to clone. When the user pastes `set up https://vectoree.ai/SKILL.md`, or the skill / CLI looks missing or stale, and there is no clone step, connect the current directory.
 
 1. Install (or refresh) the skill pack so it loads in future sessions:
 
@@ -142,7 +160,8 @@ Safe-first order: `current` / `ai status` / `tools status` -> `db list` / `stora
 ## Workflow
 
 ```text
-Setup (skill + probe-or-login/link + ai chat ping) -> match intent -> fetch playbook if needed -> probe with CLI -> paste snippet / wire app -> verify
+Clone prompt: clone -> cd into that directory -> npx @vectoree/cli login -> link -> current -> stop
+Other setup: skill + probe-or-login/link + ai chat ping -> match intent -> fetch playbook if needed -> probe with CLI -> paste snippet / wire app -> verify
 ```
 
 Example: first model call after setup (setup validation is already `ai chat "ping"`)
@@ -170,7 +189,7 @@ Match what the developer said (English intents below). Fetch the matching **long
 
 | ID | Developer says | Do this |
 |----|----------------|---------|
-| **S01** | set up Vectoree / log in to Vectoree / connect this app's backend | Probe `whoami` + `current` + `ai chat "ping"` first. If all pass, skip. Else `login` -> `link` -> `ai chat "ping"`. Never run speech/image/video/embed during setup. |
+| **S01** | set up Vectoree / log in to Vectoree / connect this app's backend | If the message also says to clone a repository, follow **Clone a repo, then link that directory** and stop after `current`. Otherwise probe `whoami` + `current` + `ai chat "ping"` first. If all pass, skip. Else `login` -> `link` -> `ai chat "ping"`. Never run speech/image/video/embed during setup. |
 | **S02** | bind this directory to an existing project | `link` (pick existing; do not create unless asked) |
 | **S03** | CI / headless / no browser | Set `VECTOREE_API_KEY` (+ optional `VECTOREE_API_URL`). Verify with `ai chat "ping"`. Do not default to `--use-device-code`. |
 | **S04** | am I connected / which project | `current` / `whoami` / `ai chat "ping"` (read-only). Do not relink unless these fail. |
